@@ -19,7 +19,7 @@ commands to install these:
 
 '''
 
-def urdf_load(urdfString, startJoint, endJoint, fixed_ee_joint = None, Debug=False):
+def urdf_load(urdfString, startJoint, endJoint, full_joint_list, fixed_ee_joint = None, Debug=False):
     '''
     Takes in a urdf file and parses that into different object representations of the robot arm
 
@@ -34,14 +34,68 @@ def urdf_load(urdfString, startJoint, endJoint, fixed_ee_joint = None, Debug=Fal
 
     urdf_robot = URDF.from_xml_file(urdfString)
     (ok, kdl_tree) = pyurdf.treeFromFile(urdfString)
-    chain = kdl_tree.getChain(startJoint, endJoint)
-    arm = convertToArm(urdf_robot, startJoint, endJoint, fixed_ee_joint, Debug=Debug)
+    if not (startJoint == '' or endJoint == ''):
+        chain = kdl_tree.getChain(startJoint, endJoint)
+    if full_joint_list == ():
+        arm = convertToArm(urdf_robot, startJoint, endJoint, fixed_ee_joint, Debug=Debug)
+    else:
+        arm = convertToArmJointList(urdf_robot, full_joint_list, fixed_ee_joint, Debug=Debug)
 
     if Debug:
         o = open('out', 'w')
         o.write(str(urdf_robot))
 
     return urdf_robot, arm, kdl_tree
+
+def convertToArmJointList(urdf_robot, full_joint_list, fixedJoint, Debug=False):
+    if urdf_robot == None:
+        raise ValueError('Incorrect Argument in convertToArm.  urdf_robot is None type.')
+
+    joints = urdf_robot.joints
+
+    name = urdf_robot.name
+    axes = []
+    offset = []
+    displacements = []
+    rotOffsets = []
+    firstPass = True
+
+    for j in full_joint_list:
+        for js in joints:
+            if js.name == j:
+                if firstPass:
+                    axes.append(toAxisLetter(js.axis))
+                    offset = tuple(js.origin.xyz)
+                    rotOffsets.append(tuple(js.origin.rpy))
+                    firstPass = False
+                else:
+                    axes.append(toAxisLetter(js.axis))
+                    displacements.append(tuple(js.origin.xyz))
+                    rotOffsets.append(tuple(js.origin.rpy))
+
+        # add any additional joints in the chain listed after the end joint
+    if not fixedJoint == None:
+        currJoint = []
+        for j in joints:
+            if j.name == fixedJoint:
+                currJoint = j
+                displacements.append(tuple(currJoint.origin.xyz))
+        if currJoint == []:
+            print bcolors.FAIL + 'fixed_ee_joint: {} not found!'.format(fixedJoint) + bcolors.ENDC
+            raise Exception('Invalid fixed_ee_joint.  Exiting.')
+
+
+    numDOF = len(axes)
+    rotOffsets = rotOffsets[0:numDOF]
+
+    if Debug:
+        outStr = 'name:\n {} \n axes:\n {} \n displacements:\n {} \n ' \
+                 'rotOffsets:\n {} \n offset:\n {} offset'.format(name, tuple(axes), displacements, rotOffsets, offset)
+
+        print outStr
+
+    return Arm(tuple(axes), displacements, rotOffsets, offset, name)
+
 
 
 def convertToArm(urdf_robot, startJoint, endJoint, fixedJoint, Debug=False):
@@ -88,6 +142,7 @@ def convertToArm(urdf_robot, startJoint, endJoint, fixedJoint, Debug=False):
     rotOffsets.append(tuple(currJoint.origin.rpy))
 
     currJoint = findNextJoint(joints, currJoint.child)
+
     while True:
         axes.append(toAxisLetter(currJoint.axis))
         displacements.append(tuple(currJoint.origin.xyz))

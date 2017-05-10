@@ -15,6 +15,7 @@ from RelaxedIK.weight_function import *
 
 class RelaxedIK:
     def __init__(self, (urdf_path, start_joint, end_joint, fixed_ee_joint),
+                 full_joint_list=(),
                  init_state=6*[0],
                  rotation_mode = 'displacements', # could be 'absolute' or 'displacements'
                  position_mode = 'displacements', # could be 'absolute' or 'displacements'
@@ -25,6 +26,9 @@ class RelaxedIK:
                  bounds=()):
 
         # check inputs ####################################################################################################################
+        if (start_joint == '' or end_joint == '') and full_joint_list == ():
+            print bcolors.FAIL + 'Invalid robot info.  Must either specify start and end joints or specify full joint list.' + bcolors.ENDC
+            raise ValueError('Invalid robot info.')
         if not (rotation_mode == 'displacements' or rotation_mode == 'absolute'):
             print bcolors.FAIL + 'Invalid rotation_mode.  Must be <displacements> or <absolute>.  Exiting.' + bcolors.ENDC
             raise ValueError('Invalid rotation_mode.')
@@ -40,7 +44,7 @@ class RelaxedIK:
             raise ValueError('Invalid function arguments.')
         ###################################################################################################################################
 
-        urdf_robot, arm, tree = urdf_load(urdf_path, start_joint, end_joint, fixed_ee_joint)
+        urdf_robot, arm, tree = urdf_load(urdf_path, start_joint, end_joint, full_joint_list, fixed_ee_joint)
 
         self.urdf_robot = urdf_robot
         self.arm = arm
