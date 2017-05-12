@@ -20,8 +20,8 @@ class RelaxedIK:
                  rotation_mode = 'displacements', # could be 'absolute' or 'displacements'
                  position_mode = 'displacements', # could be 'absolute' or 'displacements'
                  objectives=(Position_Obj(), Orientation_Obj(), Min_EE_Vel_Obj(), Min_Jt_Vel_Obj()),
-                 weight_funcs=(Identity_Weight(), Hand_Vel_Weight(), Identity_Weight(), Identity_Weight()),
-                 weight_priors=(12.0, 7.0, 1.0, 2.0),
+                 weight_funcs=(Identity_Weight(), Identity_Weight(), Identity_Weight(), Identity_Weight()),
+                 weight_priors=(12.0, 7.0, 1.0, 3.0),
                  constraints=(),
                  bounds=()):
 
@@ -77,6 +77,12 @@ class RelaxedIK:
         elif self.rotation_mode == 'absolute':
             self.vars.goal_quat = goal_quat
 
+        # flip goal quat if necessary
+        disp = np.linalg.norm(T.quaternion_disp(self.vars.prev_goal_quat,self.vars.goal_quat))
+        q = self.vars.goal_quat
+        if disp > M.pi / 2.0:
+            self.vars.goal_quat = [-q[0],-q[1],-q[2],-q[3]]
+
         if self.position_mode == 'displacements':
             self.vars.goal_pos = np.array(goal_pos) + self.vars.init_ee_pos
         elif self.position_mode == 'absolute':
@@ -99,13 +105,28 @@ class RelaxedIK:
         if verbose_output:
             print bcolors.OKBLUE + xopt_full + bcolors.ENDC + '\n'
 
+        # check rotation convergence
+        frames = self.vars.arm.getFrames(xopt)[1]
+        eeMat = frames[-1]
+        goal_quat = self.vars.goal_quat
+        ee_quat = T.quaternion_from_matrix(eeMat)
+        q = goal_quat
+        goal_quat2 = [-q[0],-q[1],-q[2],-q[3]]
+        disp = np.linalg.norm(T.quaternion_disp(goal_quat,ee_quat))
+        disp2 = np.linalg.norm(T.quaternion_disp(goal_quat2,ee_quat))
+
         # log info into vars
         self.vars.prev_state = self.vars.xopt
         self.vars.xopt = xopt
         self.vars.prev_ee_pos = self.vars.arm.getFrames(xopt)[0][-1]
         self.vars.prev_ee_quat = T.quaternion_from_matrix(self.arm.getFrames(xopt)[1][-1])
         self.vars.prev_goal_pos = self.vars.goal_pos
-        self.vars.prev_goal_quat = self.vars.goal_quat
+        if disp2 < disp:
+            pass
+            # self.vars.prev_goal_quat = goal_quat2
+        else:
+            pass
+            # self.vars.prev_goal_quat = goal_quat
 
         self.vars.all_states.append(xopt)
         self.vars.all_ee_pos.append(self.vars.prev_ee_pos)
