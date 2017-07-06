@@ -17,8 +17,8 @@ class RelaxedIK:
     def __init__(self, (urdf_path, start_joint, end_joint, fixed_ee_joint),
                  full_joint_list=(),
                  init_state=6*[0],
-                 rotation_mode = 'displacements', # could be 'absolute' or 'displacements'
-                 position_mode = 'displacements', # could be 'absolute' or 'displacements'
+                 rotation_mode = 'relative', # could be 'absolute' or 'relative'
+                 position_mode = 'relative', # could be 'absolute' or 'relative'
                  objectives=(Position_Obj(), Orientation_Obj(), Min_EE_Vel_Obj(), Min_Jt_Vel_Obj()),
                  weight_funcs=(Identity_Weight(), Identity_Weight(), Identity_Weight(), Identity_Weight()),
                  weight_priors=(12.0, 7.0, 1.0, 3.0),
@@ -29,11 +29,11 @@ class RelaxedIK:
         if (start_joint == '' or end_joint == '') and full_joint_list == ():
             print bcolors.FAIL + 'Invalid robot info.  Must either specify start and end joints or specify full joint list.' + bcolors.ENDC
             raise ValueError('Invalid robot info.')
-        if not (rotation_mode == 'displacements' or rotation_mode == 'absolute'):
-            print bcolors.FAIL + 'Invalid rotation_mode.  Must be <displacements> or <absolute>.  Exiting.' + bcolors.ENDC
+        if not (rotation_mode == 'relative' or rotation_mode == 'absolute'):
+            print bcolors.FAIL + 'Invalid rotation_mode.  Must be <relative> or <absolute>.  Exiting.' + bcolors.ENDC
             raise ValueError('Invalid rotation_mode.')
-        if not (position_mode == 'displacements' or position_mode == 'absolute'):
-            print bcolors.FAIL + 'Invalid position_mode.  Must be <displacements> or <absolute>.  Exiting.' + bcolors.ENDC
+        if not (position_mode == 'relative' or position_mode == 'absolute'):
+            print bcolors.FAIL + 'Invalid position_mode.  Must be <relative> or <absolute>.  Exiting.' + bcolors.ENDC
             raise ValueError('Invalid position_mode.')
         num_objs = len(objectives)
         if not (num_objs == len(weight_funcs) == len(weight_priors)):
@@ -72,7 +72,7 @@ class RelaxedIK:
         :return:
         '''
 
-        if self.rotation_mode == 'displacements':
+        if self.rotation_mode == 'relative':
             self.vars.goal_quat = T.quaternion_multiply(goal_quat, self.vars.init_ee_quat)
         elif self.rotation_mode == 'absolute':
             self.vars.goal_quat = goal_quat
@@ -83,7 +83,7 @@ class RelaxedIK:
         if disp > M.pi / 2.0:
             self.vars.goal_quat = [-q[0],-q[1],-q[2],-q[3]]
 
-        if self.position_mode == 'displacements':
+        if self.position_mode == 'relative':
             self.vars.goal_pos = np.array(goal_pos) + self.vars.init_ee_pos
         elif self.position_mode == 'absolute':
             self.vars.goal_pos = np.array(goal_pos)
