@@ -6,6 +6,7 @@ This solver was featured in the mimicry control interface, shown to be an effect
 http://graphics.cs.wisc.edu/Papers/2017/RMG17/
 
 https://dl.acm.org/citation.cfm?id=3020254
+
 https://www.researchgate.net/publication/314160208_A_Motion_Retargeting_Method_for_Effective_Mimicry-based_Teleoperation_of_Robot_Arms
 
 To test that the solver is working for you, start with the sample.py script in the main directory.
