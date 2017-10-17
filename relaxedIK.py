@@ -28,7 +28,7 @@ class RelaxedIK:
         # check inputs ####################################################################################################################
         if (start_joint == '' or end_joint == '') and full_joint_list == ():
             print bcolors.FAIL + 'Invalid robot info.  Must either specify start and end joints or specify full joint list.' + bcolors.ENDC
-            raise Va/home/danny/18-HRI-NRL-Catkin_ws/18-HRI-Rakita-NRL-catkin_ws/src/hubo_teleoperationlueError('Invalid robot info.')
+            raise Exception('Invalid robot info.')
         if not (rotation_mode == 'relative' or rotation_mode == 'absolute'):
             print bcolors.FAIL + 'Invalid rotation_mode.  Must be <relative> or <absolute>.  Exiting.' + bcolors.ENDC
             raise ValueError('Invalid rotation_mode.')
