@@ -2,8 +2,7 @@
 Relaxed inverse kinematics solver.  Takes in any robot urdf, and allows for specificing general state, motion, and action goals in robot arm teleoperation
 
 If you use this solver in your projects, please cite our paper A Motion Retargeting Method for Effective Mimicry-based Teleoperation of Robot Arms
-
-bibtex:
+Bibtex:
 @inproceedings{rakita2017motion,
   title={A Motion Retargeting Method for Effective Mimicry-based Teleoperation of Robot Arms},
   author={Rakita, Daniel and Mutlu, Bilge and Gleicher, Michael},
