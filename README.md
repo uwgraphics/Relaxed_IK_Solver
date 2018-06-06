@@ -1,4 +1,6 @@
 # Relaxed_IK_Solver
+THIS VERSION OF RELAXEDIK IS NOW DEPRECATED AND NO LONGER BEING SUPPORTED.  PLEASE REFER TO THE NEWER VERSION https://github.com/uwgraphics/relaxed_ik
+
 Relaxed inverse kinematics solver.  Takes in any robot urdf, and allows for specificing general state, motion, and action goals in robot arm teleoperation
 
 If you use this solver in your projects, please cite our paper A Motion Retargeting Method for Effective Mimicry-based Teleoperation of Robot Arms
